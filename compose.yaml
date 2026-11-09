@@ -23,7 +23,6 @@ x-airflow-common: &airflow-common
 
 x-superset-environment: &superset-env
   SUPERSET_HOME: /app/superset_home
-  # Обязательно замените на длинный случайный ключ
   SUPERSET_SECRET_KEY: change-me-to-a-long-random-secret-key
   SUPERSET_SQLALCHEMY_DATABASE_URI: sqlite:////app/superset_home/superset.db
   SUPERSET_LOAD_EXAMPLES: "false"
@@ -52,10 +51,14 @@ services:
     restart: unless-stopped
 
   clickhouse:
-    image: clickhouse/clickhouse-server:latest
+    image: clickhouse/clickhouse-server:26.8-alpine
     ports:
       - "8123:8123"   # HTTP interface
       - "9000:9000"   # Native protocol
+    environment:
+      - CLICKHOUSE_USER=default
+      - CLICKHOUSE_DEFAULT_ACCESS_MANAGEMENT=1
+      - CLICKHOUSE_PASSWORD=password
     volumes:
       - clickhouse_data:/var/lib/clickhouse
     ulimits:
@@ -109,7 +112,7 @@ services:
     restart: unless-stopped
 
   superset-init:
-    image: apache/superset:latest
+    image: apache/superset:master
     entrypoint: /bin/sh
     command:
       - -c
@@ -128,7 +131,7 @@ services:
     restart: "no"
 
   superset:
-    image: apache/superset:latest
+    image: apache/superset:master
     entrypoint: /bin/sh
     command:
       - -c
